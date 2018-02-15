@@ -3,14 +3,14 @@
 1. [DockerComunityEdition](https://www.docker.com/community-edition)もしくは[DockerToolBox](https://docs.docker.com/toolbox/overview/)
 2. [DockerCompose](https://docs.docker.com/compose/install/)
 
-# 1. Standalone
-## Standaloneを起動する
+# 1. standalone
+## standaloneコンテナを起動する
 ```bash
 $ docker run --name standalone --hostname standalone -d \
 -p 6650:6650 \
 -p 8080:8080 \
 -v $PWD/data:/pulsar/data \
-apachepulsar/pulsar:latest \
+apachepulsar/pulsar \
 bin/pulsar standalone
 
 # JVMのmemoryが足りない場合
@@ -19,22 +19,35 @@ $ docker run --name standalone --hostname standalone -d \
 -p 8080:8080 \
 -v $PWD/data:/pulsar/data \
 -e PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g" \
-apachepulsar/pulsar:latest \
+apachepulsar/pulsar \
 /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone"
 
 # 確認
 $ docker ps -a
 
+CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                                            NAMES
+1a99c999dd95        apachepulsar/pulsar:latest   "bin/pulsar standalon"   11 seconds ago      Up 10 seconds       0.0.0.0:6650->6650/tcp, 0.0.0.0:8080->8080/tcp   standalone
+
 # 終了したいときは
 $ docker stop standalone
 $ docker rm standalone
 ```
-
+## ダッシュボードを起動する
+```bash
+$ docker run -d --name dashboard --link standalone:standalone \
+-p 80:80 \
+-e SERVICE_URL=http://standalone:8080 \
+apachepulsar/pulsar-dashboard
+```
+ブラウザなどでコンテナの親ホスト:80にアクセスすると各トピックのstats情報を見ることができます。
+## standaloneコンテナの中に入る
+以降特に指定がなければstandaloneコンテナの中に入って各コマンドを実行してください
+```bash
+# standaloneコンテナの中に入る
+$ docker exec -it standalone /bin/bash
+```
 ## メッセージの送信/受信を試す
 ```bash
-# standaloneコンテナに入る
-$ docker exec -it standalone /bin/bash
-
 # Consumerを起動
 $ bin/pulsar-client consume -s sub persistent://sample/standalone/ns1/topic1
 
@@ -45,17 +58,15 @@ $ bin/pulsar-client produce -m 'HelloPulsar' persistent://sample/standalone/ns1/
 ----- got message -----
 HelloPulsar
 ```
-## ダッシュボードを起動する
+## パフォーマンス測定ツールを試す
 ```bash
-$ docker run -d --name dashboard --link standalone:standalone \
--p 80:80 \
--e SERVICE_URL=http://standalone:8080 \
-apachepulsar/pulsar-dashboard
-```
-ブラウザなどでコンテナの親ホスト:80にアクセスすると各トピックのstats情報を見ることができます。
+# Producer
+$ bin/pulsar-perf produce persistent://sample/standalone/ns1/topic1
 
+# Consumer
+$ bin/pulsar-perf consume persistent://sample/standalone/ns1/topic1
+```
 # 2. トピック / サブスクリプション
-以下のコマンドをstandaloneコンテナ内で実行してください。
 ## プロパティを作成する
 ```bash
 $ bin/pulsar-admin properties create -c standalone -r 'my-role' my-prop
@@ -133,7 +144,6 @@ $ bin/pulsar-client produce -m 1,2,3,4,5 persistent://my-prop/standalone/my-ns/t
 # もう1台のConsumerがメッセージを受け取る
 ```
 # 3. Backlog / Retention
-以下のコマンドをstandaloneコンテナ内で実行してください。
 ## Backlogが溜まる様子を確認
 ```bash
 # Producerからメッセージを10個送信
