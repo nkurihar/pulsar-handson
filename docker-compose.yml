@@ -1,0 +1,151 @@
+version: '2'
+
+services:
+  global-zookeeper:
+    image: apachepulsar/pulsar
+    expose:
+      - 2184
+    command: bin/pulsar global-zookeeper
+
+  # EAST cluster
+  east-zookeeper:
+    image: apachepulsar/pulsar
+    expose:
+      - 2181
+    command: bin/pulsar zookeeper
+
+  east-initialize-cluster-metadata:
+    image: apachepulsar/pulsar
+    depends_on:
+      - global-zookeeper
+      - east-zookeeper
+    restart: on-failure
+    command: >
+      bin/pulsar initialize-cluster-metadata
+      --cluster east
+      --global-zookeeper global-zookeeper:2184
+      --zookeeper east-zookeeper:2181
+      --web-service-url http://east-broker:8080
+      --broker-service-url pulsar://east-broker:6650
+
+  east-bookie:
+    image: apachepulsar/pulsar
+    depends_on:
+      - east-initialize-cluster-metadata
+    restart: on-failure
+    environment:
+      - PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+      - dbStorage_writeCacheMaxSizeMb=256
+      - dbStorage_readAheadCacheMaxSizeMb=256
+      - zkServers=east-zookeeper:2181
+    command: >
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/bookkeeper.conf
+      && bin/pulsar bookie"
+
+  east-broker:
+    image: apachepulsar/pulsar
+    expose:
+      - 8080 
+      - 6650 
+    depends_on:
+      - east-bookie
+    restart: on-failure
+    environment:
+      - PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+      - clusterName=east
+      - zookeeperServers=east-zookeeper:2181
+      - globalZookeeperServers=global-zookeeper:2184
+      - managedLedgerDefaultEnsembleSize=1
+      - managedLedgerDefaultWriteQuorum=1
+      - managedLedgerDefaultAckQuorum=1
+    command: >
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/broker.conf
+      && bin/pulsar broker"
+
+  # WEST cluster
+  west-zookeeper:
+    image: apachepulsar/pulsar
+    expose:
+      - 2181
+    command: bin/pulsar zookeeper
+
+  west-initialize-cluster-metadata:
+    image: apachepulsar/pulsar
+    depends_on:
+      - global-zookeeper
+      - west-zookeeper
+    restart: on-failure
+    command: >
+      bin/pulsar initialize-cluster-metadata
+      --cluster west
+      --global-zookeeper global-zookeeper:2184
+      --zookeeper west-zookeeper:2181
+      --web-service-url http://west-broker:8080
+      --broker-service-url pulsar://west-broker:6650
+
+  west-bookie:
+    image: apachepulsar/pulsar
+    depends_on:
+      - west-initialize-cluster-metadata
+    restart: on-failure
+    environment:
+      - PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+      - dbStorage_writeCacheMaxSizeMb=256
+      - dbStorage_readAheadCacheMaxSizeMb=256
+      - zkServers=west-zookeeper:2181
+    command: >
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/bookkeeper.conf
+      && bin/pulsar bookie"
+
+  west-broker:
+    image: apachepulsar/pulsar
+    expose:
+      - 8080 
+      - 6650 
+    depends_on:
+      - west-bookie
+    restart: on-failure
+    environment:
+      - PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+      - clusterName=west
+      - zookeeperServers=west-zookeeper:2181
+      - globalZookeeperServers=global-zookeeper:2184
+      - managedLedgerDefaultEnsembleSize=1
+      - managedLedgerDefaultWriteQuorum=1
+      - managedLedgerDefaultAckQuorum=1
+    command: >
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/broker.conf
+      && bin/pulsar broker"
+
+  # Monitoring
+  dashboard:
+    image: apachepulsar/pulsar-dashboard
+    depends_on:
+      - namespace-setup 
+    environment:
+      - SERVICE_URL=http://east-broker:8080
+    ports:
+      - "80:80"
+
+  # Create my-prop/[east,west,global]/my-ns
+  namespace-setup:
+    image: apachepulsar/pulsar
+    depends_on:
+      - east-broker 
+      - west-broker 
+    restart: on-failure
+    environment:
+      - brokerServiceUrl=pulsar://east-broker:6650
+      - webServiceUrl=http://east-broker:8080
+    command: > 
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/client.conf 
+      && bin/pulsar-admin properties create -c east,west,global -r my-role my-prop
+      && bin/pulsar-admin namespaces create my-prop/east/my-ns
+      && bin/pulsar-admin namespaces create my-prop/west/my-ns
+      && bin/pulsar-admin namespaces create my-prop/global/my-ns
+      && bin/pulsar-admin namespaces set-clusters -c east,west my-prop/global/my-ns"
