@@ -100,6 +100,18 @@ $ bin/pulsar-client produce -m 'HelloPulsar' persistent://my-prop/standalone/my-
 ----- got message -----
 HelloPulsar
 ```
+## メッセージの送信/受信を試す(non-persistent)
+```bash
+# Consumerを起動
+$ bin/pulsar-client consume -s sub non-persistent://my-prop/standalone/my-ns/topic1
+
+# Producerからメッセージを送信（別ターミナルで）
+$ bin/pulsar-client produce -m 'HelloPulsar' non-persistent://my-prop/standalone/my-ns/topic1
+
+# Consumerがメッセージを受信
+----- got message -----
+HelloPulsar
+```
 ## サブスクリプション
 ### Exclusive
 ```bash
