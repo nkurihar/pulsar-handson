@@ -95,7 +95,7 @@ $ bin/pulsar-admin namespaces list my-prop
 
 my-prop/standalone/my-ns
 ```
-## メッセージの送信/受信を試す
+## メッセージの送信/受信を試す(persistent)
 ```bash
 # Consumerを起動
 $ bin/pulsar-client consume -s sub persistent://my-prop/standalone/my-ns/topic1
@@ -106,6 +106,12 @@ $ bin/pulsar-client produce -m 'HelloPulsar' persistent://my-prop/standalone/my-
 # Consumerがメッセージを受信
 ----- got message -----
 HelloPulsar
+
+# perf producer
+$ bin/pulsar-perf produce persistent://my-prop/standalone/my-ns/topic1
+
+# perf consumer
+$ bin/pulsar-perf consume persistent://my-prop/standalone/my-ns/topic1
 ```
 ## メッセージの送信/受信を試す(non-persistent)
 ```bash
@@ -118,6 +124,12 @@ $ bin/pulsar-client produce -m 'HelloPulsar' non-persistent://my-prop/standalone
 # Consumerがメッセージを受信
 ----- got message -----
 HelloPulsar
+
+# perf producer
+$ bin/pulsar-perf produce non-persistent://my-prop/standalone/my-ns/topic1
+
+# perf consumer
+$ bin/pulsar-perf consume non-persistent://my-prop/standalone/my-ns/topic1
 ```
 ## サブスクリプション
 ### Exclusive
