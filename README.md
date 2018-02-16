@@ -16,7 +16,6 @@ docker-compose version 1.19.0, build 9e633ef
 $ docker run --name standalone --hostname standalone -d \
 -p 6650:6650 \
 -p 8080:8080 \
--v $PWD/data:/pulsar/data \
 apachepulsar/pulsar \
 bin/pulsar standalone
 
@@ -24,7 +23,6 @@ bin/pulsar standalone
 $ docker run --name standalone --hostname standalone -d \
 -p 6650:6650 \
 -p 8080:8080 \
--v $PWD/data:/pulsar/data \
 -e PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g" \
 apachepulsar/pulsar \
 /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone"
@@ -35,7 +33,8 @@ $ docker ps -a
 CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                                            NAMES
 1a99c999dd95        apachepulsar/pulsar:latest   "bin/pulsar standalon"   11 seconds ago      Up 10 seconds       0.0.0.0:6650->6650/tcp, 0.0.0.0:8080->8080/tcp   standalone
 
-# 終了したいときは
+# 参考
+# コンテナを終了したいときは下記手順を実行してください
 $ docker stop standalone
 $ docker rm standalone
 ```
@@ -68,10 +67,21 @@ HelloPulsar
 ## パフォーマンス測定ツールを試す
 ```bash
 # Producer
+# 終了するときはCtrl+C
 $ bin/pulsar-perf produce persistent://sample/standalone/ns1/topic1
 
+<中略>
+2018-02-16 10:43:51,830 - INFO  - [main:PerformanceProducer@401] - Throughput produced:    100.0  msg/s ---      0.8 Mbit/s --- Latency: mean:   4.714 ms - med:   3.303 - 95pct:   4.563 - 99pct:  64.946 - 99.9pct: 153.931 - 99.99pct: 162.850 - Max: 162.850
+...
+
 # Consumer
+# 終了するときはCtrl+C
 $ bin/pulsar-perf consume persistent://sample/standalone/ns1/topic1
+
+<中略>
+2018-02-16 10:49:22,136 - INFO  - [main:PerformanceConsumer@313] - Throughput received: 99.926  msg/s -- 0.781 Mbit/s --- Latency: mean: 7.856 ms - med: 8.000 - 95pct: 12.000 - 99pct: 13.000 - 99.9pct: 13.000 - 99.99pct: 13.000 - Max: 13.000
+...
+
 ```
 # 2. トピック / サブスクリプション
 ## プロパティを作成する
@@ -256,18 +266,19 @@ pulsarhandson_west-broker_1                        /bin/bash -c bin/apply-con ..
 pulsarhandson_west-initialize-cluster-metadata_1   bin/pulsar initialize-clus ...   Exit 0                     
 pulsarhandson_west-zookeeper_1                     bin/pulsar zookeeper             Up       2181/tcp
 
-# 終了したいときは
+# 参考
+# コンテナを終了したいときは下記コマンドを実行してください
 $ docker-compose down
 ```
 ## メッセージの送受信(west)
 ```bash
 # Consumer
-$ docker exec -it pulsarhandson_east-broker_1 \
-bin/pulsar-client consume -s sub-west \
+$ docker exec -it pulsarhandson_west-broker_1 \
+bin/pulsar-client consume -s sub \
 persistent://my-prop/west/my-ns/topic1
 
 # Producer（別ターミナル）
-$ docker exec -it pulsarhandson_east-broker_1 \
+$ docker exec -it pulsarhandson_west-broker_1 \
 bin/pulsar-client produce -m 'from west' \
 persistent://my-prop/west/my-ns/topic1
 
@@ -278,23 +289,30 @@ from west
 ## メッセージの送受信(global)
 ```bash
 # west側 Consumer
-$ docker exec -it pulsarhandson_east-broker_1 \
-bin/pulsar-client consume -s sub-west \
+$ docker exec -it pulsarhandson_west-broker_1 \
+bin/pulsar-client consume -s sub -n 0 \
 persistent://my-prop/global/my-ns/topic1
 
 # east側 Consumer（別ターミナル）
 $ docker exec -it pulsarhandson_east-broker_1 \
-bin/pulsar-client consume -s sub-east \
+bin/pulsar-client consume -s sub -n 0 \
 persistent://my-prop/global/my-ns/topic1
 
 # west側 Producer（別ターミナル）
-$ docker exec -it pulsarhandson_east-broker_1 \
+$ docker exec -it pulsarhandson_west-broker_1 \
 bin/pulsar-client produce -m 'from west' \
 persistent://my-prop/global/my-ns/topic1
 
-# 各Consumerに各Producerからのメッセージが届く
+# 各Consumerにwestからのメッセージが届く
 ----- got message -----
 from west
 
-# 同様にeast側からもメッセージを送信してみてください
+# 同様にeast側からもメッセージを送信してみる
+$ docker exec -it pulsarhandson_east-broker_1 \
+bin/pulsar-client produce -m 'from east' \
+persistent://my-prop/global/my-ns/topic1
+
+# 各Consumerにeastからのメッセージが届く
+----- got message -----
+from east
 ```
