@@ -3,6 +3,13 @@
 1. [DockerComunityEdition](https://www.docker.com/community-edition)もしくは[DockerToolBox](https://docs.docker.com/toolbox/overview/)
 2. [DockerCompose](https://docs.docker.com/compose/install/)
 
+最終的に以下のコマンドが実行できていればOKです:
+```bash
+$ docker-compose --version
+
+docker-compose version 1.19.0, build 9e633ef
+```
+
 # 1. standalone
 ## standaloneコンテナを起動する
 ```bash
