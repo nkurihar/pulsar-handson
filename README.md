@@ -5,6 +5,7 @@
 
 3. `apachepulsar/pulsar`をpullしておいてください:
 ```bash
+# 2で作成したIDでログインします
 $ docker login
 
 Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
@@ -12,6 +13,7 @@ Username (nkurihar@apache.org): nkurihar
 Password: 
 Login Succeeded
 
+# apachepulsar/pulsarのイメージをダウンロードします
 $ docker pull apachepulsar/pulsar
 
 Using default tag: latest
