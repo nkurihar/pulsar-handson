@@ -1,13 +1,38 @@
 # 0. Dockerの準備
-お使いのPCに下記をインストールしてください:
-1. [DockerComunityEdition](https://www.docker.com/community-edition)もしくは[DockerToolBox](https://docs.docker.com/toolbox/overview/)
-2. [DockerCompose](https://docs.docker.com/compose/install/)
+1. お使いのPCに[DockerComunityEdition](https://www.docker.com/community-edition)をインストールしてください。ただしOSが対応していないなどで上記がインストールできない場合は代わりに[DockerToolBox](https://docs.docker.com/toolbox/overview/)と[DockerCompose](https://docs.docker.com/compose/install/)をインストールしてください。
 
-最終的に以下のコマンドが実行できていればOKです:
+2. [DockerHub](https://hub.docker.com/)でDocker IDを作成しておいてください(持っていない方)
+
+3. `apachepulsar/pulsar`をpullしておいてください:
 ```bash
-$ docker-compose --version
+$ docker login
 
-docker-compose version 1.19.0, build 9e633ef
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username (nkurihar@apache.org): nkurihar
+Password: 
+Login Succeeded
+
+$ docker pull apachepulsar/pulsar
+
+Using default tag: latest
+latest: Pulling from apachepulsar/pulsar
+c75480ad9aaf: Pull complete 
+18d67befbc4e: Pull complete 
+1f5d2d0853c7: Pull complete 
+5de358416a75: Pull complete 
+4049b231edea: Pull complete 
+6617c62c7c10: Pull complete 
+aa26fbcddb08: Pull complete 
+d5b28339f9cb: Pull complete 
+8d7b25fab67a: Pull complete 
+32be1da32711: Pull complete 
+bbbe7896b1d7: Pull complete 
+37651c1d6628: Pull complete 
+35a0c05fe222: Pull complete 
+c336c4b6f88a: Pull complete 
+29baf1639e9c: Pull complete 
+Digest: sha256:f2647b61b7e31896204cee7ce9edcd35c1fd5bf2aece65feade2abe1ceeb8d80
+Status: Downloaded newer image for apachepulsar/pulsar:latest
 ```
 
 # 1. standalone
