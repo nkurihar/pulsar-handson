@@ -82,14 +82,18 @@ $ docker exec -it standalone /bin/bash
 ## メッセージの送信/受信を試す
 ```bash
 # Consumerを起動
-$ bin/pulsar-client consume -s sub persistent://sample/standalone/ns1/topic1
+$ bin/pulsar-client consume -s sub -n 0 persistent://sample/standalone/ns1/topic1
 
 # Producerからメッセージを送信（別ターミナルで）
-$ bin/pulsar-client produce -m 'HelloPulsar' persistent://sample/standalone/ns1/topic1
+$ bin/pulsar-client produce -m 'hoge,fuga,bar' persistent://sample/standalone/ns1/topic1
 
 # Consumerがメッセージを受信
 ----- got message -----
-HelloPulsar
+hoge
+----- got message -----
+fuga
+----- got message -----
+bar
 ```
 ## パフォーマンス測定ツールを試す
 ```bash
@@ -135,14 +139,18 @@ my-prop/standalone/my-ns
 ## メッセージの送信/受信を試す(persistent)
 ```bash
 # Consumerを起動
-$ bin/pulsar-client consume -s sub persistent://my-prop/standalone/my-ns/topic1
+$ bin/pulsar-client consume -s sub -n 0 persistent://my-prop/standalone/my-ns/topic1
 
 # Producerからメッセージを送信（別ターミナルで）
-$ bin/pulsar-client produce -m 'HelloPulsar' persistent://my-prop/standalone/my-ns/topic1
+$ bin/pulsar-client produce -m 'hoge,fuga,bar' persistent://my-prop/standalone/my-ns/topic1
 
 # Consumerがメッセージを受信
 ----- got message -----
-HelloPulsar
+hoge
+----- got message -----
+fuga
+----- got message -----
+bar
 
 # perf producer
 $ bin/pulsar-perf produce persistent://my-prop/standalone/my-ns/topic1
@@ -153,14 +161,18 @@ $ bin/pulsar-perf consume persistent://my-prop/standalone/my-ns/topic1
 ## メッセージの送信/受信を試す(non-persistent)
 ```bash
 # Consumerを起動
-$ bin/pulsar-client consume -s sub non-persistent://my-prop/standalone/my-ns/topic1
+$ bin/pulsar-client consume -s sub -n 0 non-persistent://my-prop/standalone/my-ns/topic1
 
 # Producerからメッセージを送信（別ターミナルで）
-$ bin/pulsar-client produce -m 'HelloPulsar' non-persistent://my-prop/standalone/my-ns/topic1
+$ bin/pulsar-client produce -m 'hoge,fuga,bar' non-persistent://my-prop/standalone/my-ns/topic1
 
 # Consumerがメッセージを受信
 ----- got message -----
-HelloPulsar
+hoge
+----- got message -----
+fuga
+----- got message -----
+bar
 
 # perf producer
 $ bin/pulsar-perf produce non-persistent://my-prop/standalone/my-ns/topic1
@@ -181,6 +193,9 @@ ERROR Error while consuming messages
 ERROR Exclusive consumer is already connected
 org.apache.pulsar.client.api.PulsarClientException$ConsumerBusyException: Exclusive consumer is already connected
 ...
+
+# 違うサブスクリプション名であれば接続できる（別ターミナルで）
+$ bin/pulsar-client consume -s sub2 persistent://my-prop/standalone/my-ns/topic1
 ```
 ### Shared
 ```bash
@@ -193,7 +208,7 @@ $ bin/pulsar-client consume -s sub -t Shared -n 0 persistent://my-prop/standalon
 # Producerからメッセージを5個送信（別ターミナルで）
 $ bin/pulsar-client produce -m 1,2,3,4,5 persistent://my-prop/standalone/my-ns/topic1
 
-# 各Consumerにメッセージがラウンドロビン（ただし厳密なラウンドロビンではなく多少偏る）で配られる
+# 各Consumerにメッセージがラウンドロビン（ただし厳密なラウンドロビンではなく偏る）で配られる
 ```
 ### Failover
 ```bash
