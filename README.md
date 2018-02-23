@@ -310,17 +310,17 @@ $ docker-compose ps
 
                       Name                                    Command               State          Ports       
 ---------------------------------------------------------------------------------------------------------------
-pulsarhandson_dashboard_1                          supervisord -n                   Up       0.0.0.0:80->80/tcp
-pulsarhandson_east-bookie_1                        /bin/bash -c bin/apply-con ...   Up                         
-pulsarhandson_east-broker_1                        /bin/bash -c bin/apply-con ...   Up       6650/tcp, 8080/tcp
-pulsarhandson_east-initialize-cluster-metadata_1   bin/pulsar initialize-clus ...   Exit 0                     
-pulsarhandson_east-zookeeper_1                     bin/pulsar zookeeper             Up       2181/tcp          
-pulsarhandson_global-zookeeper_1                   bin/pulsar global-zookeeper      Up       2184/tcp          
-pulsarhandson_namespace-setup_1                    /bin/bash -c bin/apply-con ...   Exit 0                     
-pulsarhandson_west-bookie_1                        /bin/bash -c bin/apply-con ...   Up                         
-pulsarhandson_west-broker_1                        /bin/bash -c bin/apply-con ...   Up       6650/tcp, 8080/tcp
-pulsarhandson_west-initialize-cluster-metadata_1   bin/pulsar initialize-clus ...   Exit 0                     
-pulsarhandson_west-zookeeper_1                     bin/pulsar zookeeper             Up       2181/tcp
+georeplication_dashboard_1                          supervisord -n                   Up       0.0.0.0:80->80/tcp
+georeplication_east-bookie_1                        /bin/bash -c bin/apply-con ...   Up                         
+georeplication_east-broker_1                        /bin/bash -c bin/apply-con ...   Up       6650/tcp, 8080/tcp
+georeplication_east-initialize-cluster-metadata_1   bin/pulsar initialize-clus ...   Exit 0                     
+georeplication_east-zookeeper_1                     bin/pulsar zookeeper             Up       2181/tcp          
+georeplication_global-zookeeper_1                   bin/pulsar global-zookeeper      Up       2184/tcp          
+georeplication_namespace-setup_1                    /bin/bash -c bin/apply-con ...   Exit 0                     
+georeplication_west-bookie_1                        /bin/bash -c bin/apply-con ...   Up                         
+georeplication_west-broker_1                        /bin/bash -c bin/apply-con ...   Up       6650/tcp, 8080/tcp
+georeplication_west-initialize-cluster-metadata_1   bin/pulsar initialize-clus ...   Exit 0                     
+georeplication_west-zookeeper_1                     bin/pulsar zookeeper             Up       2181/tcp
 
 # 参考: 終了したいときは下記を実行してください
 $ docker-compose down
@@ -328,12 +328,12 @@ $ docker-compose down
 ## メッセージの送受信(west)
 ```bash
 # Consumer
-$ docker exec -it pulsarhandson_west-broker_1 \
+$ docker exec -it georeplication_west-broker_1 \
 bin/pulsar-client consume -s sub \
 persistent://my-prop/west/my-ns/topic1
 
 # Producer（別ターミナル）
-$ docker exec -it pulsarhandson_west-broker_1 \
+$ docker exec -it georeplication_west-broker_1 \
 bin/pulsar-client produce -m 'from west' \
 persistent://my-prop/west/my-ns/topic1
 
@@ -344,17 +344,17 @@ from west
 ## メッセージの送受信(global)
 ```bash
 # west側 Consumer
-$ docker exec -it pulsarhandson_west-broker_1 \
+$ docker exec -it georeplication_west-broker_1 \
 bin/pulsar-client consume -s sub -n 0 \
 persistent://my-prop/global/my-ns/topic1
 
 # east側 Consumer（別ターミナル）
-$ docker exec -it pulsarhandson_east-broker_1 \
+$ docker exec -it georeplication_east-broker_1 \
 bin/pulsar-client consume -s sub -n 0 \
 persistent://my-prop/global/my-ns/topic1
 
 # west側 Producer（別ターミナル）
-$ docker exec -it pulsarhandson_west-broker_1 \
+$ docker exec -it georeplication_west-broker_1 \
 bin/pulsar-client produce -m 'from west' \
 persistent://my-prop/global/my-ns/topic1
 
@@ -363,7 +363,7 @@ persistent://my-prop/global/my-ns/topic1
 from west
 
 # 同様にeast側からもメッセージを送信してみる
-$ docker exec -it pulsarhandson_east-broker_1 \
+$ docker exec -it georeplication_east-broker_1 \
 bin/pulsar-client produce -m 'from east' \
 persistent://my-prop/global/my-ns/topic1
 
