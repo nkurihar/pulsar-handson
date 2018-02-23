@@ -293,7 +293,7 @@ $ bin/pulsar-admin persistent stats persistent://my-prop/standalone/my-ns/topic1
 ```
 # 4. GeoReplication
 ## standaloneは終了しておく
-```
+```bash
 # ポートが競合してしまうため終了しておいてください
 $ docker-compose down
 ```
