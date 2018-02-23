@@ -1,9 +1,9 @@
-# 0. Dockerの準備
+# 0. 準備
 1. お使いのPCに[DockerComunityEdition](https://www.docker.com/community-edition)をインストールしてください。ただしOSが対応していないなどで上記がインストールできない場合は代わりに[DockerToolBox](https://docs.docker.com/toolbox/overview/)と[DockerCompose](https://docs.docker.com/compose/install/)をインストールしてください。
 
 2. [DockerHub](https://hub.docker.com/)でDocker IDを作成しておいてください(持っていない方)
 
-3. `apachepulsar/pulsar`をpullしておいてください:
+3. `apachepulsar/pulsar`, `apachepulsar/pulsar-dashboard`をpullしておいてください:
 ```bash
 # 2で作成したIDでログインします
 $ docker login
@@ -35,49 +35,53 @@ c336c4b6f88a: Pull complete
 29baf1639e9c: Pull complete 
 Digest: sha256:f2647b61b7e31896204cee7ce9edcd35c1fd5bf2aece65feade2abe1ceeb8d80
 Status: Downloaded newer image for apachepulsar/pulsar:latest
+
+# 同様にapachepulsar/pulsar-dashboardのイメージをダウンロードしてください
+$ docker pull apachepulsar/pulsar-dashboard
+```
+4. nkurihar/pulsar-handsonをcloneしておいてください(要git)
+```
+$ git clone https://github.com/nkurihar/pulsar-handson.git
+$ cd pulsar-handson
 ```
 
 # 1. standalone
-## standaloneコンテナを起動する
+## コンテナを起動する
 ```bash
-$ docker run --name standalone --hostname standalone -d \
--p 6650:6650 \
--p 8080:8080 \
-apachepulsar/pulsar \
-bin/pulsar standalone
+$ cd standalone
 
-# JVMのmemoryが足りない場合
-$ docker run --name standalone --hostname standalone -d \
--p 6650:6650 \
--p 8080:8080 \
--e PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g" \
-apachepulsar/pulsar \
-/bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone"
+# 起動
+$ docker-compose up -d
+
+Creating network "standalone_default" with the default driver
+Creating standalone_dashboard_1  ... done
+Creating standalone_standalone_1 ... done
 
 # 確認
-$ docker ps -a
+$ docker-compose ps
 
-CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                                            NAMES
-1a99c999dd95        apachepulsar/pulsar:latest   "bin/pulsar standalon"   11 seconds ago      Up 10 seconds       0.0.0.0:6650->6650/tcp, 0.0.0.0:8080->8080/tcp   standalone
+         Name                      Command            State         Ports       
+--------------------------------------------------------------------------------
+standalone_dashboard_1    supervisord -n              Up      80/tcp            
+standalone_standalone_1   /bin/bash -c bin/apply-     Up      6650/tcp, 8080/tcp
+                          con ... 
 
-# 参考
-# コンテナを終了したいときは下記手順を実行してください
-$ docker stop standalone
-$ docker rm standalone
+# 参考: 終了したいときは下記を実行してください
+$ docker-compose down
+
+Stopping standalone_dashboard_1  ... done
+Stopping standalone_standalone_1 ... done
+Removing standalone_dashboard_1  ... done
+Removing standalone_standalone_1 ... done
+Removing network standalone_default
 ```
-## ダッシュボードを起動する
-```bash
-$ docker run -d --name dashboard --link standalone:standalone \
--p 80:80 \
--e SERVICE_URL=http://standalone:8080 \
-apachepulsar/pulsar-dashboard
-```
-ブラウザなどでコンテナの親ホスト:80にアクセスすると各トピックのstats情報を見ることができます。
+[Dashboard](https://pulsar.incubator.apache.org/docs/latest/admin/Dashboard/)も同時に起動しており、ブラウザなどでコンテナの親ホスト:80にアクセスすると各トピックのstats情報を見ることができます。
+
 ## standaloneコンテナの中に入る
 以降特に指定がなければstandaloneコンテナの中に入って各コマンドを実行してください
 ```bash
 # standaloneコンテナの中に入る
-$ docker exec -it standalone /bin/bash
+$ docker exec -it standalone_standalone_1 /bin/bash
 ```
 ## メッセージの送信/受信を試す
 ```bash
