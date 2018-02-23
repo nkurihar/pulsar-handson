@@ -75,7 +75,7 @@ Removing standalone_dashboard_1  ... done
 Removing standalone_standalone_1 ... done
 Removing network standalone_default
 ```
-[Dashboard](https://pulsar.incubator.apache.org/docs/latest/admin/Dashboard/)も同時に起動しており、ブラウザなどでコンテナの親ホスト:80にアクセスすると各トピックのstats情報を見ることができます。
+[Dashboard](https://pulsar.incubator.apache.org/docs/latest/admin/Dashboard/)も同時に起動しており、ブラウザなどでコンテナの親ホスト:80(例. http://localhost:80 )にアクセスすると各トピックのstats情報を見ることができます。
 
 ## standaloneコンテナの中に入る
 以降特に指定がなければstandaloneコンテナの中に入って各コマンドを実行してください
