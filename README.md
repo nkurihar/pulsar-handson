@@ -322,8 +322,7 @@ pulsarhandson_west-broker_1                        /bin/bash -c bin/apply-con ..
 pulsarhandson_west-initialize-cluster-metadata_1   bin/pulsar initialize-clus ...   Exit 0                     
 pulsarhandson_west-zookeeper_1                     bin/pulsar zookeeper             Up       2181/tcp
 
-# 参考
-# コンテナを終了したいときは下記コマンドを実行してください
+# 参考: 終了したいときは下記を実行してください
 $ docker-compose down
 ```
 ## メッセージの送受信(west)
