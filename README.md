@@ -39,7 +39,7 @@ Status: Downloaded newer image for apachepulsar/pulsar:latest
 # 同様にapachepulsar/pulsar-dashboardのイメージをダウンロードしてください
 $ docker pull apachepulsar/pulsar-dashboard
 ```
-4. nkurihar/pulsar-handsonをcloneしておいてください(要git)
+4. [nkurihar/pulsar-handson](https://github.com/nkurihar/pulsar-handson)をcloneしておいてください(要git)
 ```
 $ git clone https://github.com/nkurihar/pulsar-handson.git
 $ cd pulsar-handson
