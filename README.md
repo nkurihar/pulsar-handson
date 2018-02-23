@@ -48,7 +48,8 @@ $ cd pulsar-handson
 # 1. standalone
 ## コンテナを起動する
 ```bash
-$ cd standalone
+# pulsar-handson/standaloneに移動してください
+$ cd ${your_work_directory}/pulsar-handson/standalone
 
 # 起動
 $ docker-compose up -d
@@ -86,9 +87,11 @@ $ docker exec -it standalone_standalone_1 /bin/bash
 ## メッセージの送信/受信を試す
 ```bash
 # Consumerを起動
+# -n で受信するメッセージの数を指定できます。0にするとずっと受信し続けます。
 $ bin/pulsar-client consume -s sub -n 0 persistent://sample/standalone/ns1/topic1
 
 # Producerからメッセージを送信（別ターミナルで）
+# -m で送信するメッセージを指定できます。カンマ区切りで複数送信することが可能です。
 $ bin/pulsar-client produce -m 'hoge,fuga,bar' persistent://sample/standalone/ns1/topic1
 
 # Consumerがメッセージを受信
@@ -289,10 +292,17 @@ $ bin/pulsar-admin persistent reset-cursor -s sub -t 1h persistent://my-prop/sta
 $ bin/pulsar-admin persistent stats persistent://my-prop/standalone/my-ns/topic1
 ```
 # 4. GeoReplication
+## standaloneは終了しておく
+```
+# ポートが競合してしまうため終了しておいてください
+$ docker-compose down
+```
 ## east / west clusterを起動
 ```bash
-$ git clone https://github.com/nkurihar/pulsar-handson.git
-$ cd pulsar-handson
+# pulsar-handson/georeplicationに移動してください
+$ cd ${your_work_directory}/pulsar-handson/georeplication
+
+# 起動
 $ docker-compose up -d
 
 # 確認
