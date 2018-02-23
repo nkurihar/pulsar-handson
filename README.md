@@ -4,7 +4,7 @@
 2. [DockerHub](https://hub.docker.com/)でDocker IDを作成しておいてください(持っていない方)
 
 3. `apachepulsar/pulsar`, `apachepulsar/pulsar-dashboard`をpullしておいてください:
-```bash
+```
 # 2で作成したIDでログインします
 $ docker login
 
