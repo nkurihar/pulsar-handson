@@ -69,7 +69,7 @@ Removing network standalone_default
 [Dashboard](https://pulsar.incubator.apache.org/docs/latest/admin/Dashboard/)も同時に起動しており、ブラウザなどでコンテナの親ホスト:80(例. http://localhost:80 )にアクセスすると各トピックのstats情報を見ることができます。
 
 ## standaloneコンテナの中に入る
-以降特に指定がなければstandaloneコンテナの中に入って各コマンドを実行してください
+この章およびトピック/サブスクリプション、Backlog/Retentionでは上記で起動したstandaloneコンテナの中に入ってから各コマンドを実行してください:
 ```bash
 # standaloneコンテナの中に入る
 $ docker exec -it standalone_standalone_1 /bin/bash
@@ -311,9 +311,6 @@ georeplication_west-bookie_1                        /bin/bash -c bin/apply-con .
 georeplication_west-broker_1                        /bin/bash -c bin/apply-con ...   Up       6650/tcp, 8080/tcp
 georeplication_west-initialize-cluster-metadata_1   bin/pulsar initialize-clus ...   Exit 0                     
 georeplication_west-zookeeper_1                     bin/pulsar zookeeper             Up       2181/tcp
-
-# 参考: 終了したいときは下記を実行してください
-$ docker-compose down
 ```
 ## メッセージの送受信(west)
 ```bash
@@ -360,4 +357,124 @@ persistent://my-prop/global/my-ns/topic1
 # 各Consumerにeastからのメッセージが届く
 ----- got message -----
 from east
+```
+# 5. 認証認可
+## 認証認可を有効にしたstandaloneを起動
+```bash
+# pulsar-handson/authに移動してください
+$ cd ${your_work_directory}/pulsar-handson/auth
+
+# 起動
+$ docker-compose up -d
+
+# 確認
+$ % docker-compose ps
+
+Name                     Command               State         Ports
+-------------------------------------------------------------------------------
+auth_dashboard_1    supervisord -n                   Up      0.0.0.0:80->80/tcp
+auth_standalone_1   /bin/bash -c bin/apply-con ...   Up      6650/tcp, 8080/tcp
+```
+## 認証認可の設定
+ここではBasic認証(パスワード認証)を利用してみます。
+上記で起動したstandaloneには下記のロールとそれに紐づくパスワードが予め登録されています。
+
+ロール名 | パスワード | 備考 |
+--|---|---
+super | superpass | スーパーユーザー(すべての操作が可能)
+user1 | user1pass |
+user2 | user2pass |
+
+### コンテナの中に入る
+```bash
+$ docker exec -it auth_standalone_1 /bin/bash
+```
+### user1の認証情報を設定する
+下記の設定により`pulsar-admin`や`pulsar-client`を実行する際にuser1としてアクセスできます。
+```
+$ vim conf/client.conf
+
+authPlugin=org.apache.pulsar.client.impl.auth.AuthenticationBasic
+authParams={"userId":"user1","password":"user1pass"}
+```
+### プロパティを作成する
+プロパティの作成はスーパーユーザー(super)が行う必要があります。
+そのため下記では`--auth-params`オプションでsuperの認証情報を設定しています。
+```bash
+# 作成
+$ bin/pulsar-admin \
+--auth-params "{\"userId\":\"super\",\"password\":\"superpass\"}" \
+properties create -c standalone -r user1 my-prop
+
+# 確認
+$ bin/pulsar-admin \
+--auth-params "{\"userId\":\"super\",\"password\":\"superpass\"}" \
+properties get my-prop
+
+{
+  "adminRoles" : [ "user1" ],
+  "allowedClusters" : [ "standalone" ]
+}
+```
+### ネームスペースを作成する
+ネームスペースの作成はプロパティに設定したadminRole(user1)が行う必要があります。
+```bash
+$ bin/pulsar-admin namespaces create my-prop/standalone/my-ns
+
+# 確認
+$ bin/pulsar-admin namespaces list my-prop
+
+my-prop/standalone/my-ns
+```
+### ネームスペースに対してproduce/consumeが可能なロールを設定する
+同様にadminRole(user1)が行う必要があります。
+```bash
+# user1のproduce/consumeを許可
+$ bin/pulsar-admin namespaces grant-permission --actions produce,consume --role user1 my-prop/standalone/my-ns
+
+# 確認
+$ bin/pulsar-admin namespaces permissions my-prop/standalone/my-ns
+
+{
+  "user1" : [ "produce", "consume" ]
+}
+```
+### produce/consumeを試してみる
+#### user1はproduce/consumeできる
+```bash
+# consumer
+$ bin/pulsar-client consume -s sub -n 0 persistent://my-prop/standalone/my-ns/topic1
+
+# producer
+$ bin/pulsar-client produce -m 'hoge,fuga,bar' persistent://my-prop/standalone/my-ns/topic1
+
+# Consumerがメッセージを受信
+----- got message -----
+hoge
+----- got message -----
+fuga
+----- got message -----
+bar
+```
+#### user2はproduce/consumeできない
+```bash
+# consumer
+$ bin/pulsar-client \
+--auth-params "{\"userId\":\"user2\",\"password\":\"user2pass\"}" \
+consume -s sub persistent://my-prop/standalone/my-ns/topic1
+
+ERROR Error while consuming messages
+ERROR Authorization failed user2 on topic persistent://my-prop/standalone/my-ns/topic1 with error Don't have permission to administrate resources on this property
+org.apache.pulsar.client.api.PulsarClientException$AuthorizationException: Authorization failed user2 on topic persistent://my-prop/standalone/my-ns/topic1 with error Don't have permission to administrate resources on this property
+...
+
+# producer
+$ bin/pulsar-client \
+--auth-params "{\"userId\":\"user2\",\"password\":\"user2pass\"}" \
+produce -m 'hoge,fuga,bar' persistent://my-prop/standalone/my-ns/topic1
+
+ERROR Error while producing messages
+ERROR Authorization failed user2 on topic persistent://my-prop/standalone/my-ns/topic1 with error Don't have permission to administrate resources on this property
+org.apache.pulsar.client.api.PulsarClientException$AuthorizationException: Authorization failed user2 on topic persistent://my-prop/standalone/my-ns/topic1 with error Don't have permission to administrate resources on this property
+...
 ```
