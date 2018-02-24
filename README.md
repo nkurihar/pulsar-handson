@@ -1,50 +1,40 @@
 # 0. 準備
 1. お使いのPCに[DockerComunityEdition](https://www.docker.com/community-edition)をインストールしてください。ただしOSが対応していないなどで上記がインストールできない場合は代わりに[DockerToolBox](https://docs.docker.com/toolbox/overview/)と[DockerCompose](https://docs.docker.com/compose/install/)をインストールしてください。
 
-2. [DockerHub](https://hub.docker.com/)でDocker IDを作成しておいてください(持っていない方)
+2. `apachepulsar/pulsar`, `apachepulsar/pulsar-dashboard`をpullしておいてください:
 
-3. `apachepulsar/pulsar`, `apachepulsar/pulsar-dashboard`をpullしておいてください:
 ```
-# 2で作成したIDでログインします
-$ docker login
-
-Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
-Username (nkurihar@apache.org): nkurihar
-Password: 
-Login Succeeded
-
-# apachepulsar/pulsarのイメージをダウンロードします
+# apachepulsar/pulsarのイメージをpullします
 $ docker pull apachepulsar/pulsar
 
 Using default tag: latest
 latest: Pulling from apachepulsar/pulsar
-c75480ad9aaf: Pull complete 
-18d67befbc4e: Pull complete 
-1f5d2d0853c7: Pull complete 
-5de358416a75: Pull complete 
-4049b231edea: Pull complete 
-6617c62c7c10: Pull complete 
-aa26fbcddb08: Pull complete 
-d5b28339f9cb: Pull complete 
-8d7b25fab67a: Pull complete 
-32be1da32711: Pull complete 
-bbbe7896b1d7: Pull complete 
-37651c1d6628: Pull complete 
-35a0c05fe222: Pull complete 
-c336c4b6f88a: Pull complete 
-29baf1639e9c: Pull complete 
+c75480ad9aaf: Pull complete
+18d67befbc4e: Pull complete
+1f5d2d0853c7: Pull complete
+5de358416a75: Pull complete
+4049b231edea: Pull complete
+6617c62c7c10: Pull complete
+aa26fbcddb08: Pull complete
+d5b28339f9cb: Pull complete
+8d7b25fab67a: Pull complete
+32be1da32711: Pull complete
+bbbe7896b1d7: Pull complete
+37651c1d6628: Pull complete
+35a0c05fe222: Pull complete
+c336c4b6f88a: Pull complete
+29baf1639e9c: Pull complete
 Digest: sha256:f2647b61b7e31896204cee7ce9edcd35c1fd5bf2aece65feade2abe1ceeb8d80
 Status: Downloaded newer image for apachepulsar/pulsar:latest
 
-# 同様にapachepulsar/pulsar-dashboardのイメージをダウンロードしてください
+# 同様にapachepulsar/pulsar-dashboardのイメージをpullしてください
 $ docker pull apachepulsar/pulsar-dashboard
 ```
-4. [nkurihar/pulsar-handson](https://github.com/nkurihar/pulsar-handson)をcloneしておいてください(要git)
+3. [nkurihar/pulsar-handson](https://github.com/nkurihar/pulsar-handson)をcloneしておいてください(要git)
 ```
 $ git clone https://github.com/nkurihar/pulsar-handson.git
 $ cd pulsar-handson
 ```
-
 # 1. standalone
 ## コンテナを起動する
 ```bash
@@ -65,7 +55,7 @@ $ docker-compose ps
 --------------------------------------------------------------------------------
 standalone_dashboard_1    supervisord -n              Up      80/tcp            
 standalone_standalone_1   /bin/bash -c bin/apply-     Up      6650/tcp, 8080/tcp
-                          con ... 
+                          con ...
 
 # 参考: 終了したいときは下記を実行してください
 $ docker-compose down
