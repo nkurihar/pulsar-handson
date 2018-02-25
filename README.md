@@ -399,7 +399,7 @@ authParams={"userId":"user1","password":"user1pass"}
 ```
 ### プロパティを作成する
 プロパティの作成はスーパーユーザー(super)が行う必要があります。
-そのため下記では`--auth-params`オプションでsuperの認証情報を設定しています。
+そのため下記では`--auth-params`オプションで認証情報をsuperのものに上書きしています。
 ```bash
 # 作成
 $ bin/pulsar-admin \
