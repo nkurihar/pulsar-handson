@@ -181,7 +181,7 @@ $ bin/pulsar-perf consume non-persistent://my-prop/standalone/my-ns/topic1
 ### Exclusive
 ```bash
 # Consumerを起動
-$ bin/pulsar-client consume -s sub persistent://my-prop/standalone/my-ns/topic1
+$ bin/pulsar-client consume -s sub -n 0 persistent://my-prop/standalone/my-ns/topic1
 
 # 同じサブスクリプション名でConsumerの起動しようとすると失敗する（別ターミナルで）
 $ bin/pulsar-client consume -s sub persistent://my-prop/standalone/my-ns/topic1
@@ -192,7 +192,10 @@ org.apache.pulsar.client.api.PulsarClientException$ConsumerBusyException: Exclus
 ...
 
 # 違うサブスクリプション名であれば接続できる（別ターミナルで）
-$ bin/pulsar-client consume -s sub2 persistent://my-prop/standalone/my-ns/topic1
+$ bin/pulsar-client consume -s sub2 -n 0 persistent://my-prop/standalone/my-ns/topic1
+
+# Producerからメッセージを5個送信するとsub,sub2の両方に5個のメッセージが送られる（別ターミナルで）
+$ bin/pulsar-client produce -m 1,2,3,4,5 persistent://my-prop/standalone/my-ns/topic1
 ```
 ### Shared
 ```bash
@@ -218,7 +221,7 @@ $ bin/pulsar-client consume -s sub -t Failover -n 0 persistent://my-prop/standal
 # Producerからメッセージを5個送信（別ターミナルで）
 $ bin/pulsar-client produce -m 1,2,3,4,5 persistent://my-prop/standalone/my-ns/topic1
 
-# メッセージを受信した方のConsumerの接続を切ってから再度送信
+# メッセージを受信した方のConsumerの接続を切って（Ctrl+C）から再度送信
 $ bin/pulsar-client produce -m 1,2,3,4,5 persistent://my-prop/standalone/my-ns/topic1
 
 # もう1台のConsumerがメッセージを受け取る
@@ -278,13 +281,13 @@ $ bin/pulsar-admin namespaces get-retention my-prop/standalone/my-ns
 # Cursorを戻す
 $ bin/pulsar-admin persistent reset-cursor -s sub -t 1h persistent://my-prop/standalone/my-ns/topic1
 
-# statsを確認(msgBacklog=10に戻っている)
+# statsを確認(msgBacklog=10もしくはpulsar-perfを試していた場合はそれ以上の値に戻っている)
 $ bin/pulsar-admin persistent stats persistent://my-prop/standalone/my-ns/topic1
 ```
 # 4. GeoReplication
-## standaloneは終了しておく
+## standaloneのコンテナは終了しておく
 ```bash
-# ポートが競合してしまうため終了しておいてください
+# Dashboardのポートが競合してしまうため終了しておいてください
 $ docker-compose down
 ```
 ## east / west clusterを起動
@@ -359,6 +362,11 @@ persistent://my-prop/global/my-ns/topic1
 from east
 ```
 # 5. 認証認可
+## georeplicationのコンテナは終了しておく
+```bash
+# Dashboardのポートが競合してしまうため終了しておいてください
+$ docker-compose down
+```
 ## 認証認可を有効にしたstandaloneを起動
 ```bash
 # pulsar-handson/authに移動してください
