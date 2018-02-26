@@ -5,14 +5,24 @@ services:
     image: apachepulsar/pulsar
     expose:
       - 2184
-    command: bin/pulsar global-zookeeper
+    environment:
+      - PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+    command: >
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/global_zookeeper.conf
+      && bin/pulsar global-zookeeper"
 
   # EAST cluster
   east-zookeeper:
     image: apachepulsar/pulsar
     expose:
       - 2181
-    command: bin/pulsar zookeeper
+    environment:
+      - PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+    command: >
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/zookeeper.conf
+      && bin/pulsar zookeeper"
 
   east-initialize-cluster-metadata:
     image: apachepulsar/pulsar
@@ -69,7 +79,12 @@ services:
     image: apachepulsar/pulsar
     expose:
       - 2181
-    command: bin/pulsar zookeeper
+    environment:
+      - PULSAR_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+    command: >
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/zookeeper.conf
+      && bin/pulsar zookeeper"
 
   west-initialize-cluster-metadata:
     image: apachepulsar/pulsar
