@@ -3,7 +3,7 @@
 
 2. `apachepulsar/pulsar`, `apachepulsar/pulsar-dashboard`をpullしておいてください:
 
-```
+```bash
 # apachepulsar/pulsarのイメージをpullします
 $ docker pull apachepulsar/pulsar
 
@@ -31,7 +31,7 @@ Status: Downloaded newer image for apachepulsar/pulsar:latest
 $ docker pull apachepulsar/pulsar-dashboard
 ```
 3. [nkurihar/pulsar-handson](https://github.com/nkurihar/pulsar-handson)をcloneしておいてください(要git)
-```
+```bash
 $ git clone https://github.com/nkurihar/pulsar-handson.git
 $ cd pulsar-handson
 ```
